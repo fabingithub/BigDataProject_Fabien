@@ -3,8 +3,8 @@
 # install
 ## unidecode
 ```python
-# pip
+# Install unidecode using pip
 pip install Unidecode  
-# conda
+# Install unidecode using conda
 conda install Unidecode
 ```
