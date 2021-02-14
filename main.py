@@ -46,7 +46,7 @@ dict_einstaklingar_teammember_info = {}
 not_the_same_person = {}
 most_likely_same_person = {}
 merged_list = {}
-
+einstak = einstaklingar
 
 def isaRadNumber(x):
     valid = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
@@ -73,7 +73,61 @@ def correctRadNumbersFromEntries():
                 lidi.at[index, 'Nafn'] = club
 
 
+def isBlank(mystring):
+    if (isinstance(mystring, float)):
+        return True
+    else:
+        return not (mystring and mystring.strip())
 
+
+def validChar(x):
+    valid = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+    return x in valid
+
+
+def convertPhoneEntry(string):
+    s = ""
+    for e in string:
+        if(validChar(e)):
+            s += e
+    return s
+
+
+def movePhoneFieldsEntries():
+    for index, row in einstak.iterrows():
+        adr1 = row['Simi1']
+        adr2 = row['Simi2']
+        adr3 = row['Simi3']
+        a, b, c = False, False, False
+
+        if (isBlank(adr1)):
+            a = True
+        if (isBlank(adr2)):
+            b = True
+        if (isBlank(adr3)):
+            c = True
+
+        if(a & b & (not c)):
+            einstak.at[index, 'Simi1'] = convertPhoneEntry(adr3)
+            einstak.at[index, 'Simi3'] = adr1  # Nan
+        elif(a & (not b) & c):
+            einstak.at[index, 'Simi1'] = convertPhoneEntry(adr2)
+            einstak.at[index, 'Simi2'] = adr1  # Nan
+        elif(a & (not b) & (not c)):
+            einstak.at[index, 'Simi1'] = convertPhoneEntry(adr2)
+            einstak.at[index, 'Simi2'] = convertPhoneEntry(adr3)
+            einstak.at[index, 'Simi3'] = adr1  # Nan
+        elif((not a) & b & (not c)):
+            einstak.at[index, 'Simi1'] = convertPhoneEntry(adr1)
+            einstak.at[index, 'Simi2'] = convertPhoneEntry(adr3)
+            einstak.at[index, 'Simi3'] = adr2  # Nan
+        else:
+            if(not a):
+                einstak.at[index, 'Simi1'] = convertPhoneEntry(adr1)
+            if(not b):
+                einstak.at[index, 'Simi2'] = convertPhoneEntry(adr2)
+            if(not c):
+                einstak.at[index, 'Simi3'] = convertPhoneEntry(adr3)
 
 
 def create_duplicated_entries(duplication_array):
@@ -282,6 +336,8 @@ def people_abled_to_merge(duplication_array):
 # call def
 correctRadNumbersFromEntries()
 # call def
+movePhoneFieldsEntries()
+# call def
 create_duplicated_entries(duplicated_fdagur_kyn_einstaklingar)
 # call def
 remove_single_entries(duplicate_dict)
@@ -297,6 +353,9 @@ connect_members_to_team_data(dict_name_entries)
 call_find_duplicates(dict_einstaklingar_teammember_info)
 # call def
 people_abled_to_merge(most_likely_same_person)
+
+print(merged_list)
+
 
 ### WRITE MERGE SUGGESTIONS TO FILE
 # WRITE THESE RESULTS TO TXT FILE
