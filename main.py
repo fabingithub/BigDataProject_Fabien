@@ -28,6 +28,8 @@ mot = pd.read_csv('csv/blak-mot.csv', sep=';', header=0)
 lid = lid[lid['SyndarlidID'].isna()]
 # then dropping those two columns because we don't want virtual teams
 lid = lid.drop(columns=['SyndarLid', 'SyndarlidID'])
+# all the Heimilisfang columns are empty so we can remove them
+einstaklingar = einstaklingar.drop(columns=['Heimilisfang1', 'Heimilisfang2', 'Heimilisfang3'])
 
 # All duplicated birthdays
 duplicated_einstaklingar = einstaklingar[einstaklingar.duplicated(subset=['Nafn', 'Fdagur', 'Kyn'], keep=False)]
@@ -71,7 +73,7 @@ def correctRadNumbersFromEntries():
                 lidi.at[index, 'Nafn'] = club
 
 
-correctRadNumbersFromEntries()
+
 
 
 def create_duplicated_entries(duplication_array):
@@ -108,8 +110,6 @@ def create_duplicated_entries(duplication_array):
             duplicate_dict[first_name_to_english][Fdagur_date] = [row.values]
 
 
-# call def
-create_duplicated_entries(duplicated_fdagur_kyn_einstaklingar)
 
 
 def remove_single_entries(duplication_array):
@@ -130,8 +130,6 @@ def remove_single_entries(duplication_array):
                     dict_removed_single_entries[key][birthday] = arrays
 
 
-# call def
-remove_single_entries(duplicate_dict)
 
 
 def identifier_map_unique_ids(duplication_array):
@@ -147,8 +145,6 @@ def identifier_map_unique_ids(duplication_array):
                     dict_name_entries[new_key] = [item[0]]
 
 
-# call def
-identifier_map_unique_ids(dict_removed_single_entries)
 
 
 def get_duplication_keys(duplication_array):
@@ -159,8 +155,6 @@ def get_duplication_keys(duplication_array):
                 duplicate_ids_kept.append(item[0])
 
 
-# call def
-get_duplication_keys(dict_removed_single_entries)
 
 
 def team_member_entries(duplication_array):
@@ -174,9 +168,6 @@ def team_member_entries(duplication_array):
             else:
                 dict_duplicate_compare_team_members[ids] = [row.values]
 
-
-# call def
-team_member_entries(lidsmenn)
 
 
 def connect_members_to_team_data(duplication_array):
@@ -201,8 +192,6 @@ def connect_members_to_team_data(duplication_array):
                         dict_einstaklingar_teammember_info[key] = [temp]
 
 
-# call def
-connect_members_to_team_data(dict_name_entries)
 
 
 def find_duplicates(key, nums):
@@ -261,8 +250,9 @@ def find_duplicates(key, nums):
                 last_array_entry = sorted_nums[i]
 
 
-for key, value in dict_einstaklingar_teammember_info.items():
-    find_duplicates(key, value)
+def call_find_duplicates(duplication_array):
+    for key, value in dict_einstaklingar_teammember_info.items():
+        find_duplicates(key, value)
 
 
 def people_abled_to_merge(duplication_array):
@@ -288,9 +278,49 @@ def people_abled_to_merge(duplication_array):
         merged_ids(key, value)
         temp_arr = []
 
-
+### calling functions
+# call def
+correctRadNumbersFromEntries()
+# call def
+create_duplicated_entries(duplicated_fdagur_kyn_einstaklingar)
+# call def
+remove_single_entries(duplicate_dict)
+# call def
+identifier_map_unique_ids(dict_removed_single_entries)
+# call def
+get_duplication_keys(dict_removed_single_entries)
+# call def
+team_member_entries(lidsmenn)
+# call def
+connect_members_to_team_data(dict_name_entries)
+# call def
+call_find_duplicates(dict_einstaklingar_teammember_info)
 # call def
 people_abled_to_merge(most_likely_same_person)
 
+### WRITE MERGE SUGGESTIONS TO FILE
+# WRITE THESE RESULTS TO TXT FILE
+merge_suggestion_for_people = (str(merged_list))
+text_file = open("merge_suggestions.txt", "w")
+text_file.write(merge_suggestion_for_people)
+text_file.close()
 
-print(len(merged_list))
+# WRITE THESE RESULTS TO PICKLE FILE TO BE ABLE TO WORK WITH THEM AGAIN
+# ONLY WORKS IN JUPYTER NOTEBOOK WITHOUT INSTALLING PACKAGES
+#pickle_obj = open("merge_suggestions.pickle", "wb")
+#pickle.dump(merged_list, pickle_obj)
+#pickle_obj.close()
+
+#duplicated people put into it's own csv to be browsed later
+pd.DataFrame(duplicated_einstaklingar).to_csv("csv/new/duplicated-einstaklingar.csv", encoding='utf-8-sig')
+
+#save as new csv inside csv/new
+pd.DataFrame(domarar).to_csv("csv/new/blak-domarar.csv", encoding='utf-8-sig')
+pd.DataFrame(einstaklingar).to_csv("csv/new/blak-einstaklingar.csv", encoding='utf-8-sig')
+pd.DataFrame(forsvarsmenn).to_csv("csv/new/blak-forsvarsmenn.csv.csv", encoding='utf-8-sig')
+pd.DataFrame(lidi).to_csv("csv/new/blak-lid.csv", encoding='utf-8-sig')
+pd.DataFrame(lidimoti).to_csv("csv/new/blak-lidimoti.csv", encoding='utf-8-sig')
+pd.DataFrame(lidsmenn).to_csv("csv/new/blak-lidsmenn.csv", encoding='utf-8-sig')
+pd.DataFrame(lidsstjorar).to_csv("csv/new/blak-lidsstjorar.csv", encoding='utf-8-sig')
+pd.DataFrame(mot).to_csv("csv/new/blak-mot.csv", encoding='utf-8-sig')
+pd.DataFrame(thjalfarar).to_csv("csv/new/blak-thjalfarar.csv", encoding='utf-8-sig')
